@@ -79,20 +79,35 @@ def _get_dataset(split):
         #imgs.append(img_4_5_1)
         time_stamps.append(time_stamp)
 
-    # TODO: normalization
+    # normalization
+    max_t = float('-inf')
+    min_t = float('inf')
+    for i in range(len(imgs)):
+        curr_max_t = np.max(imgs[i])
+        curr_min_t = np.min((imgs[i])[np.nonzero(imgs[i])])
+        if curr_max_t > max_t:
+            max_t = curr_max_t
+        if curr_min_t < min_t:
+            min_t = curr_min_t
+
+    # rescale
+    normalize = lambda x : ((x - min_t) / (max_t - min_t)) * 2 - 1
+    vect_normalize = np.vectorize(normalize)
+    imgs = vect_normalize(imgs)
 
     STEP_SIZE = 30
     inpts = []
-#    preds = []
+    preds = []
     total_hours = np.int((len(content)-1)/(nRows + 1))
     for hour in range(0,(total_hours-STEP_SIZE)):
         print(hour)
         inpt = imgs[hour:hour+STEP_SIZE]
-        #pred = imgs[(STEP_SIZE+hour)]
+        pred = imgs[(STEP_SIZE+hour)]
         inpts.append(np.reshape(np.concatenate(inpt),[-1,4,5,1]))
-        #preds.append(pred)
+        # preds.append(pred)
+        preds.append(np.reshape(np.concatenate(pred),[-1,4,5,1]))
 
-    return_item_y = [0] * len(inpts)
+    # return_item_y = [0] * len(inpts)
 
-    return np.array(inpts) , return_item_y
+    return np.array(inpts), np.array(preds)
     #np.reshape(np.array(preds),[-1, 99])

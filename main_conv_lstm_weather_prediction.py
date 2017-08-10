@@ -24,7 +24,7 @@ tf.app.flags.DEFINE_float('keep_prob', .8,
                             """for dropout""")
 tf.app.flags.DEFINE_float('lr', .0001,
                             """for learning rate""")
-tf.app.flags.DEFINE_integer('batch_size', 160,
+tf.app.flags.DEFINE_integer('batch_size', 32,
                             """batch size for training""")
 tf.app.flags.DEFINE_float('weight_init', .1,
                             """weight init for fully connected layers""")
@@ -83,6 +83,7 @@ def train():
     # make inputs : made change
     #x = tf.placeholder(tf.float32, [None, FLAGS.seq_length, 11, 9, 1])
     x = tf.placeholder(tf.float32, [None, FLAGS.seq_length, 4, 5, 1])
+    y = tf.placeholder(tf.float32, [None, 1, 4, 5, 1])
     # possible dropout inside
     keep_prob = tf.placeholder("float")
     x_dropout = tf.nn.dropout(x, keep_prob)
@@ -92,7 +93,7 @@ def train():
 
     # conv network
     hidden = None
-    for i in range(FLAGS.seq_length-1):
+    for i in range(FLAGS.seq_length):
       if i < FLAGS.seq_start:
         x_1, hidden = network_template(x_dropout[:,i,:,:,:], hidden)
       else:
@@ -105,7 +106,8 @@ def train():
 
 
     # calc total loss (compare x_t to x_t+1)
-    loss = tf.nn.l2_loss(x[:,FLAGS.seq_start+1:,:,:,:] - x_unwrap[:,FLAGS.seq_start:,:,:,:])
+    # loss = tf.nn.l2_loss(x[:,FLAGS.seq_start+1:,:,:,:] - x_unwrap[:,FLAGS.seq_start:,:,:,:])
+    loss = tf.nn.l2_loss(y[:, 0, :, :, :] - tf.reshape(x_unwrap[:, FLAGS.seq_length-1, :, :, :], [-1, 1, 4, 5, 1]))
     tf.summary.scalar('loss', loss)
 
     # data generator
@@ -140,16 +142,16 @@ def train():
     for step in range(FLAGS.max_step):
       dat, lbl = next(data_generator)
       t = time.time()
-      _, loss_r = sess.run([train_op, loss],feed_dict={x:dat, keep_prob:FLAGS.keep_prob})
+      _, loss_r = sess.run([train_op, loss],feed_dict={x:dat, y:lbl, keep_prob:FLAGS.keep_prob})
       elapsed = time.time() - t
 
-      print("goto training step " + str(step))
+      # print("goto training step " + str(step))
 
-      if step%1 == 0 and step != 0:
-        summary_str = sess.run(summary_op, feed_dict={x:dat, keep_prob:FLAGS.keep_prob})
+      if step % 100 == 0 and step != 0:
+        summary_str = sess.run(summary_op, feed_dict={x:dat, y:lbl, keep_prob:FLAGS.keep_prob})
         summary_writer.add_summary(summary_str, step)
         print("time per batch is " + str(elapsed))
-        print(step)
+        print("goto training step " + str(step))
         print(loss_r)
 
       assert not np.isnan(loss_r), 'Model diverged with loss = NaN'
