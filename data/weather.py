@@ -45,7 +45,7 @@ def _unpickle_file(filename):
     return img, lbl
 
 
- def _get_dataset(split):
+def _get_dataset(split):
     assert split == "test" or split == "train"
     path = "data"
     data_file = "weather_data_file_4_5.txt"
