@@ -35,7 +35,7 @@ def _unpickle_file(filename):
     with open(filename, mode='rb') as file:
         data = pickle.load(file, encoding='bytes')
 
-    # Reorder the data
+     # Reorder the data
     img = data[b'data']
     img = img.reshape([-1, 3, 32, 32])
     img = img.transpose([0, 2, 3, 1])
@@ -45,7 +45,7 @@ def _unpickle_file(filename):
     return img, lbl
 
 
-def _get_dataset(split):
+ def _get_dataset(split):
     assert split == "test" or split == "train"
     path = "data"
     data_file = "weather_data_file_4_5.txt"
@@ -89,6 +89,10 @@ def _get_dataset(split):
             max_t = curr_max_t
         if curr_min_t < min_t:
             min_t = curr_min_t
+    
+    mean_value = (max_t + min_t) / 2
+    for i in range(len(imgs)):
+        imgs[i][imgs[i] == 0] = mean_value         
 
     # rescale
     normalize = lambda x : ((x - min_t) / (max_t - min_t)) * 2 - 1
