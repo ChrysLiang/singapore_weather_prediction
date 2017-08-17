@@ -99,7 +99,7 @@ def _get_dataset(split):
     vect_normalize = np.vectorize(normalize)
     imgs = vect_normalize(imgs)
 
-    STEP_SIZE = 30
+    STEP_SIZE = 60
     inpts = []
     preds = []
     total_hours = np.int((len(content)-1)/(nRows + 1))

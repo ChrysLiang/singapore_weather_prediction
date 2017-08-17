@@ -76,8 +76,9 @@ def conv_layer(inputs, kernel_size, stride, num_features, idx, linear = False):
     conv = tf.nn.conv2d(inputs, weights, strides=[1, stride, stride, 1], padding='SAME')
     conv_biased = tf.nn.bias_add(conv, biases)
     if linear:
-      return conv_biased
-    conv_rect = tf.nn.tanh(conv_biased,name='{0}_conv'.format(idx))
+      conv_rect = tf.nn.relu(conv_biased,name='{0}_conv'.format(idx))
+    else:
+      conv_rect = tf.nn.tanh(conv_biased,name='{0}_conv'.format(idx))
     return conv_rect
 
 def transpose_conv_layer(inputs, kernel_size, stride, num_features, idx, linear = False):
